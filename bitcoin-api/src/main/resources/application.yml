@@ -1,0 +1,46 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    #url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/bitcoindb?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://121.89.198.164:3306/bitcoindb?characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: secret
+  cloud:
+    stream:
+      source: prices
+      kafka:
+        binder:
+          #brokers: ${KAFKA_HOST:localhost}:${KAFKA_PORT:29092}
+          brokers: 121.89.198.164:29092
+          auto-add-partitions: true
+      bindings:
+        #更多细致教程，还是看这个网页吧
+        #https://medium.com/javarevisited/event-driven-microservices-with-spring-cloud-stream-and-rabbitmq-add4166fe223
+
+        #把stream自动生成的topic与publisher的绑定
+        prices-out-0:
+          #话题
+          destination: com.mycompany.bitcoin.api.price
+          content-type: application/json
+          producer:
+            partition-key-expression: headers['partitionKey']
+            partition-count: 3
+  sleuth:
+    sampler:
+      probability: 0.5
+
+management:
+  endpoints:
+    web:
+      exposure.include: beans, env, health, info, metrics, mappings
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  show-actuator: true
+  swagger-ui:
+    groups-order: DESC
+    disable-swagger-default-url: true
